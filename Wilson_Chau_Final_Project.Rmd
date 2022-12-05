@@ -1,0 +1,157 @@
+---
+title: "Data 607 Final Project"
+author: "Wilson Chau"
+date: "2022-12-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Proposal describes your motivation for performing this analysis.
+ Proposal describes likely data sources.
+ Your project has a recognizable “data science workflow,” such as the OSEMN workflow or Hadley Wickham’s Grammar
+of Data Science. [Example: First the data is acquired, then necessary transformations and clean-up are performed, then
+the analysis and presentation work is performed]
+ Project includes data from at least two different types of data sources (e.g., two or more of these: relational or CSV,
+Neo4J, web page [scraped or API], MongoDB, etc.)
+
+#Introduction:
+I am interested in dealing with data that is relevant to my life and how I am feeling. Lately I noticed that a lot of my colleagues are more concern about their own happiness and well being. This lead me to want to focus on contribution to happiness. I found a dataset on kaggle about countries and their happienss being measured.
+
+Coming from a covid lockdown from 2020-2021. I noticed the stress level fo my friends are at an all time high. I understand that happiness does change over time, but with a pandemic level threat like Covid. Was happiness greatly affected? Did government controls or aid provided any relief in contributing happiness to the world from 2020-2021?
+#Goal and Motivation
+My motivation for working on this proposal is to determine if happiness level increased from 2020 to 2021 with the ease of the lockdown, or did happiness decrease even further due to the amount of stress developed after the lockdown and covid. I understand government played a role in how our society was able to move. I  will explore how the Happiness score varies across countries in different parts of the world. I will also identify the groups of countries(regions) of high happiness across the globe, and the country with highest happiness score in each region. These regions will be highlighted on a world map indicating the happiest and saddest parts of the globe. I want to see I am determined to learn more about happiness, and how to bring it to my own mental health. My personal goal is to showcase my R Programming.
+APPROACH
+
+In answering the question above, the following approach was followed:
+
+Acquire tech stock data.
+Filter for highest value (growth or market cap) companies.
+Verify corresponding company review on Glassdoor (if < 3.5, drop).
+For each company, scrape the “Pros” section of the top 10 reviews.
+Tidy and transform our collection of reviews.
+Visualize most frequent, pertinent verbage via table, barplot, and wordcloud.
+Analyze and conclude.
+
+## Where is the data sources:
+I received the dataset for 
+1) 2020 Happiness level:https://www.kaggle.com/datasets/londeen/world-happiness-report-2020
+2) 2021 Happiness level:https://www.kaggle.com/datasets/ajaypalsinghlo/world-happiness-report-2021
+Work Citation: 
+3) https://scrumbook.org/retrospective-pattern-language/happiness-metric.html
+Note:
+1) Dataset is uplaoded into github where I extract the raw dataset from here:
+https://github.com/Wilchau/Data_607_Final_Project
+
+
+#Setting up the data and library
+```{r}
+happy_20 <- read.csv("https://raw.githubusercontent.com/Wilchau/Data_607_Final_Project/main/world_happiness_report_2020.csv", header=TRUE)
+
+happy_21 <- read.csv("https://raw.githubusercontent.com/Wilchau/Data_607_Final_Project/main/world_happiness_report_2021.csv", header=TRUE)
+library(readr)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(stringr)
+library(e1071)
+library(tidyverse)
+library(corrplot)
+library(RColorBrewer)
+library(Hmisc)
+library(ggpubr)
+```
+
+```{r}
+head(happy_20)
+head(happy_21)
+```
+#Data Cleaning for 2020 and 2021
+In order to focus more on the variables that contribute to happiness. I will take the Country.name, Regional.indicator., Ladder.score Logged.GDP.per.capita, Social.support, Freedom.to.make.life.choices, Generosity, Perceptions.of.corruption, Dystopia...residual
+Column:(1,2,7,8,9,10,11,12,20)
+```{r}
+
+New_20 <- happy_20 %>% select(1, 2, 3, 7,8, 9, 10, 11, 12, 20)
+New_21 <- happy_21 %>% select(1, 2, 3, 7,8, 9, 10, 11, 12, 20)
+```
+I will check to see if there is any missing values in the data set, which has no missing values. Once there aren't any missing values, I check the new database New_20 and New_21 where I wanted to 
+
+```{r}
+sum(is.na(New_20))
+sum(is.na(New_21))
+```
+#Statistical analysis 
+
+```{r paged.print=TRUE}
+summary(New_20)
+```
+```{r}
+summary(New_21)
+```
+#Data Summary
+Originally the data set has:
+happy_20 -> New_20
+Number of variables: 10
+Number of countries: 153
+happy_21 -> New_21
+Number of variables: 10
+Number of Countries: 149
+
+The Ladder score is the main indicator of "Happiness" Level. Based on the summary function, we can see that in 2020 the max ladder score is 7.809 while in 2021 it is 7.842. 
+We need in 2021 the high increase on Social support, GDP. Capital, Health Expectancy gives a better picture of mental health for everyone....
+The one stress that I see still are an increase of Perceptions of corruption, and Dystopia Residual from 2020 -> 2021.Decrease in Freedom to make a choice and Generosity from 2020 -> 2021 can reveal many types of unhappiness in our life. 
+
+#Different type of presentation
+
+```{r}
+ggplot(happy_21, aes(x = Healthy.life.expectancy, y = Freedom.to.make.life.choices)) +
+  geom_point() +
+  stat_smooth()
+ggplot(happy_21, aes(x = Healthy.life.expectancy, y = Freedom.to.make.life.choices)) +
+  geom_point() +
+  stat_smooth()
+```
+
+```{r}
+ggplot(happy_20, aes(x = Healthy.life.expectancy, y = Social.support)) +
+  geom_point() +
+  stat_smooth()
+ggplot(happy_21, aes(x = Healthy.life.expectancy, y = Social.support)) +
+  geom_point() +
+  stat_smooth()
+```
+```{r}
+corrplot(cor(happy_20 %>% 
+               select(Ladder.score,Social.support, Freedom.to.make.life.choices,Logged.GDP.per.capita, Generosity)), 
+         method="color",  
+         sig.level = 0.01, insig = "blank",
+         addCoef.col = "black", 
+         tl.srt=45, 
+         type="upper")
+corrplot(cor(happy_21 %>% 
+               select(Ladder.score,Social.support, Freedom.to.make.life.choices,Logged.GDP.per.capita, Generosity)), 
+         method="color",  
+         sig.level = 0.01, insig = "blank",
+         addCoef.col = "black", 
+         tl.srt=45, 
+         type="upper")
+```
+```
+##Observation
+
+We can see from results 2020 and 2021 that Freedom to make life choices, and social support is viewed as something that is greatly expressive in making sure it can contribute to our happiness. On the correlation map, you can see Social support, Freedom to make life choices, GDP per capita and genersity comes to play as well.
+
+#Conclusion 
+Happiness is defined by a many variables, but through professional studies we can see that when we look through happiness, social support, freedom to make life choices, capita, and generosity plays a huge role in making sure this can help us gain the happiness we can contribute as a society. 
+
+#work citation
+
+1) https://www.pursuit-of-happiness.org/history-of-happiness/ed-diener/
+2) https://www.kaggle.com/datasets/londeen/world-happiness-report-2020
+3) https://www.kaggle.com/datasets/ajaypalsinghlo/world-happiness-report-2021
+
+
